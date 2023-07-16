@@ -52,48 +52,57 @@ def run(objects: list, title: str, dim: tuple, delta_t: float, unit_length: floa
         for set_of_obj in potential_collisions:
             list_of_obj = list(set_of_obj)
             for a, b in combinations(list_of_obj, 2):
-                def is_collided(obj1, obj2):
-                    distance = (obj1.position - obj2.position).length()
-                    sum_radius = obj1.radius + obj2.radius
+                def is_collided(position1, position2):
+                    distance = (position1 - position2).length()
+                    sum_radius = objects[a].radius + objects[b].radius
                 
                     if distance <= sum_radius: return True
                     else: return False
 
-                def normal_vector(position: Vector, obj):
-                    return (position - obj.position)/(position - obj.position).length()
+                if is_collided(objects[a].position, objects[b].position):
+                    m1 = objects[a].mass
+                    m2 = objects[b].mass
+                    u1 = objects[a].velocity
+                    u2 = objects[b].velocity
 
-                if is_collided(objects[a], objects[b]):
-                    prev_v = objects[a].velocity
+                    if u1.length() > u2.length():
+                        position = objects[a].position
+                        prev_position = objects[a].previous_position
+                        its_a = True
+                    else:
+                        position = objects[b].position
+                        prev_position = objects[b].previous_position
+                        its_a = False
 
-                    objects[a].collide(
-                        objects[b].mass,
-                        objects[b].velocity,
-                        lambda p: is_collided(
-                            Ball(
-                                objects[a].radius,
-                                p,
-                                objects[a].velocity,
-                                objects[a].mass
-                            ),
-                            objects[b]
-                        ),
-                        lambda p: normal_vector(p, objects[b])
-                    )
-                    objects[b].collide(
-                        objects[a].mass,
-                        prev_v,
-                        lambda p: is_collided(
-                            Ball(
-                                objects[b].radius,
-                                p,
-                                objects[b].velocity,
-                                objects[b].mass
-                            ),
-                            objects[a]
-                        ),
-                        lambda p: normal_vector(p, objects[a])
-                    )
-                    
+                    displacment = position - prev_position
+                    counter = 0b0000
+
+                    lookup = [
+                        0b1000,
+                        0b0100,
+                        0b0010,
+                        0b0001
+                    ]
+
+                    for i in lookup:
+                        counter = counter | i
+
+                        if is_collided(
+                            prev_position + displacment * counter/15,
+                            objects[b].position if its_a else position 
+                        ):  counter = counter & (~i)
+
+                    if its_a:
+                        objects[a].position = prev_position + displacment * counter/15
+                    else:
+                        objects[b].position = prev_position + displacment * counter/15
+
+                    objects[a].velocity = (m1 - m2)/(m1 + m2)*u1 + 2*m2/(m1 + m2)*u2
+                    objects[b].velocity = 2*m1/(m1 + m2)*u1 + (m2 - m1)/(m1 + m2)*u2
+
+                    objects[a].collide(delta_t * (1 - counter/15))
+                    objects[b].collide(delta_t * (1 - counter/15))
+
         for obj in objects:
             obj.update(delta_t)
 

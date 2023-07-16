@@ -46,35 +46,7 @@ class Ball:
         self.previous_position = self.position
         self.position += self.velocity * delta_t
 
-    def collide(self, m2: float, u2: Vector, overlap_func, normal_vector):
+    def collide(self, update_time):
         self.animation.start()
-        m1 = self.mass
-        u1 = self.velocity
 
-        self.velocity = (m1 - m2)/(m1 + m2)*u1 + 2*m2/(m1 + m2)*u2
-
-        displacment = self.position - self.previous_position
-        counter = 0b0000
-
-        lookup = [
-            0b1000,
-            0b0100,
-            0b0010,
-            0b0001
-        ]
-
-        for i in lookup:
-            counter = counter | i
-
-            if overlap_func(self.previous_position + displacment * counter/15):
-                counter = counter & (~i)
-
-        collision_point = self.previous_position + displacment * counter/15
-
-        temp_vect = self.position - collision_point
-
-        normal = normal_vector(collision_point)
-
-        self.position = collision_point + temp_vect - 2 * temp_vect.dot(normal)/normal.dot(normal) * normal
-
-
+        self.update(update_time)
