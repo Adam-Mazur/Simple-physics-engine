@@ -10,20 +10,10 @@ class Ball:
 
     def __init__(self, radius: float, position: Vector, velocity: Vector, mass: float):
         self.radius = radius
-        self._position = position
-        self.previous_position = position
+        self.position = position
         self.velocity = velocity
         self.mass = mass
         self.animation = Curve(bouncingTap, 30)
-
-    @property
-    def position(self):
-        return self._position
-    
-    @position.setter
-    def position(self, value):
-        self.previous_position = self.position
-        self._position = value
 
     def __call__(self, canvas: np.ndarray, unit_length: float):
         t = self.animation()
@@ -43,10 +33,12 @@ class Ball:
         )
 
     def update(self, delta_t):
-        self.previous_position = self.position
         self.position += self.velocity * delta_t
 
     def collide(self, update_time):
         self.animation.start()
 
         self.update(update_time)
+
+    def backward(self, delta_t):
+        self.position -= self.velocity * delta_t

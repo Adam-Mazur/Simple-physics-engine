@@ -1,8 +1,43 @@
 from itertools import combinations
-from vector import Vector
-from ball import Ball
 import numpy as np
 import cv2 as cv
+
+def collision(obj1, obj2, delta_t):
+    def is_collided(obj1, obj2):
+        distance = (obj1.position - obj2.position).length()
+        sum_radius = obj1.radius + obj2.radius
+    
+        if distance <= sum_radius: return True
+        else: return False
+
+    if is_collided(obj1, obj2):
+        m1 = obj1.mass
+        m2 = obj2.mass
+        u1 = obj1.velocity
+        u2 = obj2.velocity
+
+        counter = 0b0000
+        lookup = [
+            0b1000,
+            0b0100,
+            0b0010,
+            0b0001
+        ]
+
+        for i in lookup:
+            counter = counter | i
+            obj1.backward(delta_t * counter/15)
+            obj2.backward(delta_t * counter/15)
+            if not is_collided(obj1, obj2):
+                counter = counter & (~i)
+                obj1.update(delta_t * counter/15)
+                obj2.update(delta_t * counter/15)
+
+        obj1.velocity = (m1 - m2)/(m1 + m2)*u1 + 2*m2/(m1 + m2)*u2
+        obj2.velocity = 2*m1/(m1 + m2)*u1 + (m2 - m1)/(m1 + m2)*u2
+        obj1.collide(delta_t * counter/15)
+        obj2.collide(delta_t * counter/15)
+
 
 def run(objects: list, title: str, dim: tuple, delta_t: float, unit_length: float, background_color: tuple = (40, 40, 40)):
     while True:
@@ -52,56 +87,7 @@ def run(objects: list, title: str, dim: tuple, delta_t: float, unit_length: floa
         for set_of_obj in potential_collisions:
             list_of_obj = list(set_of_obj)
             for a, b in combinations(list_of_obj, 2):
-                def is_collided(position1, position2):
-                    distance = (position1 - position2).length()
-                    sum_radius = objects[a].radius + objects[b].radius
-                
-                    if distance <= sum_radius: return True
-                    else: return False
-
-                if is_collided(objects[a].position, objects[b].position):
-                    m1 = objects[a].mass
-                    m2 = objects[b].mass
-                    u1 = objects[a].velocity
-                    u2 = objects[b].velocity
-
-                    if u1.length() > u2.length():
-                        position = objects[a].position
-                        prev_position = objects[a].previous_position
-                        its_a = True
-                    else:
-                        position = objects[b].position
-                        prev_position = objects[b].previous_position
-                        its_a = False
-
-                    displacment = position - prev_position
-                    counter = 0b0000
-
-                    lookup = [
-                        0b1000,
-                        0b0100,
-                        0b0010,
-                        0b0001
-                    ]
-
-                    for i in lookup:
-                        counter = counter | i
-
-                        if is_collided(
-                            prev_position + displacment * counter/15,
-                            objects[b].position if its_a else position 
-                        ):  counter = counter & (~i)
-
-                    if its_a:
-                        objects[a].position = prev_position + displacment * counter/15
-                    else:
-                        objects[b].position = prev_position + displacment * counter/15
-
-                    objects[a].velocity = (m1 - m2)/(m1 + m2)*u1 + 2*m2/(m1 + m2)*u2
-                    objects[b].velocity = 2*m1/(m1 + m2)*u1 + (m2 - m1)/(m1 + m2)*u2
-
-                    objects[a].collide(delta_t * (1 - counter/15))
-                    objects[b].collide(delta_t * (1 - counter/15))
+                collision(objects[a], objects[b], delta_t)
 
         for obj in objects:
             obj.update(delta_t)
