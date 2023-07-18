@@ -26,7 +26,7 @@ class Ball:
 
         cv.circle(
             canvas, 
-            (round(self.position.x * unit_length + canvas.shape[1]//2), round(- self.position.y * unit_length + canvas.shape[0]//2)), 
+            (round(self.position.x * unit_length + canvas.shape[1]/2), round(- self.position.y * unit_length + canvas.shape[0]/2)), 
             round(self.radius * unit_length), 
             color, 
             thickness = cv.FILLED
@@ -35,10 +35,18 @@ class Ball:
     def update(self, delta_t):
         self.position += self.velocity * delta_t
 
-    def collide(self, update_time):
+    def collide(self, delta_t):
         self.animation.start()
 
-        self.update(update_time)
+        self.update(delta_t)
 
     def backward(self, delta_t):
         self.position -= self.velocity * delta_t
+
+    @property
+    def left(self):
+        return self.position.x - self.radius
+    
+    @property
+    def right(self):
+        return self.position.x + self.radius

@@ -32,3 +32,6 @@ class Vector:
     
     def __repr__(self):
         return f"x: {self.x}, y: {self.y}"
+    
+    def __neg__(self):
+        return self * (-1)
