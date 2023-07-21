@@ -45,3 +45,11 @@ class Wall:
     @property
     def right(self):
         return max(self.p1.x, self.p2.x)
+
+    @property
+    def position(self):
+        return None
+    
+    @position.setter
+    def position(self, _):
+        pass

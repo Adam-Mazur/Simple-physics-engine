@@ -1,5 +1,5 @@
 from itertools import combinations
-from math import sqrt, inf
+from math import sqrt
 from vector import Vector
 from ball import Ball
 from wall import Wall
@@ -56,16 +56,22 @@ def collision(obj1, obj2, delta_t):
             0b0001
         ]
 
-        obj1.backward(delta_t)
-        obj2.backward(delta_t)
+        previous_position1 = obj1.position
+        previous_position2 = obj2.position
+
+        obj1.backward(delta_t * 1.02)
+        obj2.backward(delta_t * 1.02)
         for i in lookup:
             counter = counter | i
-            obj1.update(delta_t * i/15)
-            obj2.update(delta_t * i/15)
+            obj1.update(delta_t * 1.02 * i/15)
+            obj2.update(delta_t * 1.02 * i/15)
             if is_collided(obj1, obj2):
                 counter = counter & (~i)
-                obj1.backward(delta_t * i/15)
-                obj2.backward(delta_t * i/15)
+                obj1.backward(delta_t * 1.02 * i/15)
+                obj2.backward(delta_t * 1.02 * i/15)
+
+        if is_collided(obj1, obj2):
+            print("Ehhh...")
 
         if isinstance(obj1, Ball) and isinstance(obj2, Ball):
             m1 = obj1.mass
@@ -79,13 +85,14 @@ def collision(obj1, obj2, delta_t):
             if isinstance(obj1, Ball) and isinstance(obj2, Wall):
                 ball = obj1
                 wall = obj2
+                prev_position = previous_position1
             elif isinstance(obj1, Wall) and isinstance(obj2, Ball):
                 ball = obj2
                 wall = obj1
+                prev_position = previous_position2
             else:
                 raise ValueError(f"Objects {type(obj1)} and {type(obj2)} don't match the required types.")
             
-
             wall_vec = (wall.p2 - wall.p1)/(wall.p2 - wall.p1).length()
             n = Vector(-wall_vec.y, wall_vec.x)
             v = ball.velocity
@@ -93,15 +100,13 @@ def collision(obj1, obj2, delta_t):
             proj_n = v.dot(n)/n.dot(n)*n
             proj_w = v.dot(wall_vec)/wall_vec.dot(wall_vec)*wall_vec
 
-            d1 = (ball.position - wall.p1).length()
-            d2 = (ball.position - wall.p2).length()
+            d1 = (prev_position - wall.p1).length()
+            d2 = (prev_position - wall.p2).length()
+            d = (wall.p1 - wall.p2).length()
 
-            if d1 < ball.radius and proj_w.length() > proj_n.length():
-                if ball.velocity.dot(wall_vec) > 0:
-                    ball.velocity = - ball.velocity
-            elif d2 < ball.radius and proj_w.length() > proj_n.length():
-                if ball.velocity.dot(wall_vec) < 0:
-                    ball.velocity = - ball.velocity
+            if (d1 < ball.radius and d2 > d) or (d2 < ball.radius and d1 > d):
+                ball.velocity = - ball.velocity
+                # TODO: Change this, this is wrong
             else:
                 ball.velocity = v - 2 * proj_n
 
