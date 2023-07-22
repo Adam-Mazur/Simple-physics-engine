@@ -1,9 +1,8 @@
-# Testing if the collision detection between balls and the edges of the walls works correctly
+# Testing if the collision between two balls work correctly
 from vector import Vector
 from engine import run
 from ball import Ball
 from wall import Wall
-from math import sin, cos, pi
 
 objects = []
 
@@ -12,21 +11,20 @@ height = 50
 
 unit_length = 10
 
-
 objects.append(
-    Wall(
-        Vector(0, 0),
-        Vector(width * 0.4, 0)
+    Ball(
+        radius = 2,
+        position = Vector(- width* 0.4, 0),
+        velocity = Vector(5, 0),
+        mass = 5
     )
 )
-    
-angle = pi * 0.5
 
 objects.append(
     Ball(
         radius = 2,
-        position = Vector(- 20 * cos(angle) - 1.5, 20 * sin(angle)),
-        velocity = Vector(5 * cos(angle), - 5 * sin(angle)),
+        position = Vector(width * 0.4, 1.5),
+        velocity = Vector(-5, 0),
         mass = 5
     )
 )

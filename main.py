@@ -48,6 +48,6 @@ run(
     "Animation", 
     (height * unit_length, width * unit_length, 3),
     10.0,
-    60,
+    120,
     unit_length,
 )
