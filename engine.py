@@ -7,6 +7,7 @@ import numpy as np
 import cv2 as cv
 
 def is_collided(obj1, obj2):
+    """Checks if two objects are intersecting. Walls cannot intersect other walls, because they are stationary."""
     if isinstance(obj1, Ball) and isinstance(obj2, Ball):
         distance = (obj1.position - obj2.position).length()
         sum_radius = obj1.radius + obj2.radius
@@ -48,6 +49,7 @@ def is_collided(obj1, obj2):
         return False        
 
 def resolve_collisions(objects, width, height, delta_t):
+    """If any two objects are intersecting, or outside screen, moves them to the correct position."""
     # Collisions with the borders 
     for obj in objects:
         if isinstance(obj, Ball):
@@ -162,6 +164,20 @@ def resolve_collisions(objects, width, height, delta_t):
     return n_of_collisions
 
 def run(objects: list, title: str, dim: tuple, speed: float, fps: int, unit_length: float, background_color: tuple = (40, 40, 40)):
+    """
+    Runs animation.
+
+    `objects`: A list of objects in the scene. An object can be either an instance of `Ball` or `Wall`,\n
+    `title`: The string that will be on top of the window,\n
+    `dim`: A tuple representing the dimension of the screen (height, width),\n
+    `speed`: The ratio between the time length of a single frame, and the time passed in the animation,\n
+    `fps`: Frames per second,\n
+    `unit_length`: A float representing the length in pixels of one 'animation' unit. 
+    All the objects use 'animation' positions, i.e positions in units used in animation
+    and what is displayed on the screen can be scaled up or down to make the scene more visible.\n
+    `background_color`: A tuple of ints representing the color in format BGR, i.e (blue, green, red) 
+    where blue, green, red are ints between 0 and 255.
+    """
     delta_t = speed * (1/fps)
     
     # Centering the window 
@@ -193,7 +209,9 @@ def run(objects: list, title: str, dim: tuple, speed: float, fps: int, unit_leng
 
         # Resolve collisions iteratively until there are no collisions 
         c = 1
-        while c != 0:
+        i = 0
+        while c != 0 and i < 250:
             c = resolve_collisions(objects, width, height, delta_t)
+            i += 1
 
     cv.destroyAllWindows()
