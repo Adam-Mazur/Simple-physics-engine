@@ -118,7 +118,7 @@ objects = [
 
 run(
     objects, 
-    "Animation1", 
+    "Animation3", 
     (height * unit_length, width * unit_length, 3),
     10.0,
     120,
